@@ -26,6 +26,7 @@ void PrintInstanceLayers() {
 
     ExitIfFailed(vkEnumerateInstanceLayerProperties(&numInstanceLayers, vkLayerProperties));
 
+    printf("vkEnumerateInstanceLayerProperties:\n");
     printf("+------------------------------------+---------+---------+--------------------------------------------------+\n");
     printf("|            Instance                |  Spec   |  Impl.  |                                                  |\n");
     printf("|           Layer Name               | Version | Version |                     Description                  |\n");
@@ -63,6 +64,7 @@ void PrintInstanceExtensions() {
 
     ExitIfFailed(vkEnumerateInstanceExtensionProperties(NULL, &numInstanceExtensions, vkExtensionProperties));
 
+    printf("vkEnumerateInstanceExtensionProperties:\n");
     printf("+----------------------------------------+---------+\n");
     printf("|               Extension                |  Spec   |\n");
     printf("|                 Name                   | Version |\n");
@@ -96,7 +98,7 @@ void PrintPhysicalDeviceProperties(VkPhysicalDevice physicalDevice) {
              VK_VERSION_MINOR(apiVersion),
              VK_VERSION_PATCH(apiVersion));
 
-    const char* physicalDeviceTypeStr[] = {
+    const char *physicalDeviceTypeStr[] = {
             "VK_PHYSICAL_DEVICE_TYPE_OTHER",
             "VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU",
             "VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU",
@@ -106,12 +108,12 @@ void PrintPhysicalDeviceProperties(VkPhysicalDevice physicalDevice) {
 
     printf("vkGetPhysicalDeviceProperties:\n");
     printf("============================================================\n");
-    printf("Device Name:    %s\n", vkPhysicalDeviceProperties.deviceName );
-    printf("Device Type:    %s\n", physicalDeviceTypeStr[vkPhysicalDeviceProperties.deviceType] );
-    printf("API Version:    %s\n", apiVersionStr );
-    printf("Driver Version: %#x\n", vkPhysicalDeviceProperties.driverVersion );
-    printf("Vendor ID:      %#x\n", vkPhysicalDeviceProperties.vendorID );
-    printf("Device ID:      %#x\n", vkPhysicalDeviceProperties.deviceID );
+    printf("Device Name:    %s\n", vkPhysicalDeviceProperties.deviceName);
+    printf("Device Type:    %s\n", physicalDeviceTypeStr[vkPhysicalDeviceProperties.deviceType]);
+    printf("API Version:    %s\n", apiVersionStr);
+    printf("Driver Version: %#x\n", vkPhysicalDeviceProperties.driverVersion);
+    printf("Vendor ID:      %#x\n", vkPhysicalDeviceProperties.vendorID);
+    printf("Device ID:      %#x\n", vkPhysicalDeviceProperties.deviceID);
     printf("============================================================\n");
 
 }
@@ -159,6 +161,12 @@ VkInstance CreateInstance() {
     return vkInstance;
 }
 
+void DestroyInstance(VkInstance instance) {
+    if (instance != VK_NULL_HANDLE) {
+        vkDestroyInstance(instance, NULL);
+    }
+}
+
 /**
  * Get the first physical device returned by the the vkEnumeratePhysicalDevices
  * @param instance A handle to the Vulkan Instance.
@@ -173,8 +181,7 @@ VkPhysicalDevice GetPhysicalDevice(VkInstance instance) {
 
     ExitIfFailed(vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, vkPhysicalDevices));
 
-    for ( int i = 0; i < physicalDeviceCount; ++i )
-    {
+    for (int i = 0; i < physicalDeviceCount; ++i) {
         printf("Device [%d]:\n", i);
         PrintPhysicalDeviceProperties(vkPhysicalDevices[i]);
         printf("\n");
@@ -195,6 +202,9 @@ int main(int argc, char *argv[]) {
     VkInstance vkInstance = CreateInstance();
 
     VkPhysicalDevice vkPhysicalDevice = GetPhysicalDevice(vkInstance);
+
+    // No need to destroy Physical Devices because they are not created, they are enumerated from the instance.
+    DestroyInstance(vkInstance);
 
     return 0;
 }
