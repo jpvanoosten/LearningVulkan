@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define countof(x) (sizeof(x)/sizeof(x[0]))
+#ifndef _countof
+#define _countof(x) (sizeof(x)/sizeof(x[0]))
+#endif
 
 #define APPLICATION_VERSION VK_MAKE_VERSION(0, 0, 1)
 const char* APPLICATION_NAME = "Tutorial1";
@@ -12,7 +14,7 @@ void ExitIfFailed(VkResult result)
 {
     if ( result != VK_SUCCESS )
     {
-        printf("Error: 0x%x", result);
+        printf("Error: %#X", result);
         exit(result);
     }
 }
@@ -27,22 +29,36 @@ void PrintInstanceLayers()
 
     ExitIfFailed(vkEnumerateInstanceLayerProperties(&numInstanceLayers, vkLayerProperties) );
 
-    printf("Vulkan Instance Layers\n");
-    printf("+---------------------------------------------------------------------------------------------+\n");
+    printf("+------------------------------------+---------+---------+--------------------------------------------------+\n");
+    printf("|            Instance                |  Spec   |  Impl.  |                                                  |\n");
+    printf("|           Layer Name               | Version | Version |                     Description                  |\n");
+    printf("+------------------------------------+---------+---------+--------------------------------------------------+\n");
     for ( int i = 0; i < numInstanceLayers; ++i )
     {
         uint32_t specVersion = vkLayerProperties[i].specVersion;
-        printf("|%-38.38s | %2d.%2d.%2d | %2d | %-35.35s |\n",
+        char specVersionStr[10];
+        snprintf(specVersionStr, 10, "%d.%d.%d",
+                VK_VERSION_MAJOR(specVersion),
+                VK_VERSION_MINOR(specVersion),
+                VK_VERSION_PATCH(specVersion) );
+
+        char implVersionStr[10];
+        snprintf(implVersionStr, 10, "%d", vkLayerProperties[i].implementationVersion);
+
+        printf("|%-36.36s|%9.9s|%9.9s|%-50.50s|\n",
                vkLayerProperties[i].layerName,
-               VK_VERSION_MAJOR(specVersion),
-               VK_VERSION_MINOR(specVersion),
-               VK_VERSION_PATCH(specVersion),
-               vkLayerProperties[i].implementationVersion,
+               specVersionStr,
+               implVersionStr,
                vkLayerProperties[i].description );
     }
-    printf("+---------------------------------------------------------------------------------------------+\n");
+    printf("+------------------------------------+---------+---------+--------------------------------------------------+\n");
 
     free(vkLayerProperties);
+}
+
+void PrintInstanceExtensions()
+{
+
 }
 
 VkInstance CreateInstance()
@@ -66,11 +82,11 @@ VkInstance CreateInstance()
     vkInstanceCreateInfo.flags = 0;
     vkInstanceCreateInfo.pApplicationInfo = &vkApplicationInfo;
 
-#ifndef NDEBUG
+#if _DEBUG
     const char* enabledExtensionNames[] = {
             "VK_LAYER_LUNARG_standard_validation"
     };
-    vkInstanceCreateInfo.enabledLayerCount = countof(enabledExtensionNames);
+    vkInstanceCreateInfo.enabledLayerCount = _countof(enabledExtensionNames);
     vkInstanceCreateInfo.ppEnabledLayerNames = enabledExtensionNames;
 #else
     vkInstanceCreateInfo.enabledLayerCount = 0;

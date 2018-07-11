@@ -9,6 +9,9 @@ elseif (MINGW)
     add_compile_options(-j${N})
 endif ()
 
+# Specify the _DEBUG compiler definition to mimic MSVC behaviour.
+add_compile_definitions( $<$<CONFIG:Debug>:_DEBUG> )
+
 # Make sure DLL and EXE targets go to the same directory.
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib) # Output directory for static lib (.LIB)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory for shared lib (.DLL)
@@ -20,6 +23,5 @@ add_subdirectory(Tutorial1)
 
 # Set the startup project.
 set_directory_properties(PROPERTIES
-        VS_STARTUP_PROJECT Tutorial1
-        )
+        VS_STARTUP_PROJECT Tutorial1)
 
